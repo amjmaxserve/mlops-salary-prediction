@@ -1,11 +1,5 @@
-# MLOPS 
+# MLOps Project: Salary Prediction App
 
-Mlops project for salary prediction 
+(FastAPI + Streamlit + Docker + SonarQube)
 
-
-1. Create dataset 
-2. Train model 
-3. Create app 
-4. Push to git 
-5. Create pipeline in cloud 
 
