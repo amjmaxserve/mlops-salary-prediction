@@ -609,14 +609,16 @@ The architecture is scalable, reproducible, and cloud-ready.
 
 Arjun M J
 
+- MLOps Engineer
 - DevOps Engineer
 - Cloud Architect
-- Cyber Forensics Analyst
 
 Certifications:
 
+- AZURE DevOps Engineer
+- AZURE Administrator
 - AWS Solution Architect Associate
 - AWS Security Specialty
-- RCCE Certified Cyber Security Engineer
+
 
 ---
