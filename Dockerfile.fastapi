@@ -1,0 +1,14 @@
+FROM ml-base-image
+
+WORKDIR /app
+
+# Copy project files
+COPY . .
+
+RUN python train_model.py
+
+# Expose FastAPI port
+EXPOSE 8000
+
+# Start FastAPI
+CMD ["uvicorn", "app.fastapi_app:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,25 +1,38 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+import os
 import joblib
 import pandas as pd
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+# -----------------------------
+# Base Path
+# -----------------------------
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+MODEL_DIR = os.path.join(BASE_DIR, "..", "model")
 
 # -----------------------------
 # Load Model Files
 # -----------------------------
 
-model = joblib.load("../model/salary_model.pkl")
-label_encoders = joblib.load("../model/label_encoders.pkl")
-target_encoder = joblib.load("../model/target_encoder.pkl")
-
-# -----------------------------
-# Create FastAPI App
-# -----------------------------
-
-app = FastAPI(
-    title="Salary Prediction API",
-    description="ML API using FastAPI",
-    version="1.0"
+model = joblib.load(
+    os.path.join(MODEL_DIR, "salary_model.pkl")
 )
+
+label_encoders = joblib.load(
+    os.path.join(MODEL_DIR, "label_encoders.pkl")
+)
+
+target_encoder = joblib.load(
+    os.path.join(MODEL_DIR, "target_encoder.pkl")
+)
+
+# -----------------------------
+# FastAPI App
+# -----------------------------
+
+app = FastAPI()
 
 # -----------------------------
 # Input Schema

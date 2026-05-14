@@ -63,10 +63,15 @@ if st.button("Predict Salary"):
     }
 
     response = requests.post(
-        "http://127.0.0.1:8000/predict",
+        "http://fastapi:8000/predict",
         json=payload
     )
 
     result = response.json()
 
-    st.success(f"Prediction: {result['prediction']}")
+    st.write("API Response:", result)
+
+    if response.status_code == 200 and "prediction" in result:
+        st.success(f"Prediction: {result['prediction']}")
+    else:
+        st.error(f"API Error: {result}")

@@ -1,0 +1,12 @@
+FROM ml-base-image
+
+WORKDIR /app
+
+# Copy project files
+COPY . .
+
+# Expose Streamlit port
+EXPOSE 8501
+
+# Start Streamlit
+CMD ["streamlit", "run", "app/frontend.py", "--server.port=8501", "--server.address=0.0.0.0"]
