@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MLOps Tutorial: Salary Prediction App with FastAPI, Streamlit & Docker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fb;
+            color: #1e293b;
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            padding: 2rem 2rem 3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            border-bottom: 3px solid #e2e8f0;
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: #0f172a;
+            padding-left: 0.5rem;
+            border-left: 5px solid #3b82f6;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem;
+            color: #334155;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        code {
+            background: #f1f5f9;
+            padding: 0.2rem 0.4rem;
+            border-radius: 8px;
+            font-family: 'Courier New', 'Fira Code', monospace;
+            font-size: 0.9rem;
+            color: #d946ef;
+        }
+
+        pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+            line-height: 1.45;
+            box-shadow: inset 0 0 0 1px #334155;
+        }
+
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+            font-size: inherit;
+        }
+
+        .file-tree {
+            background: #f8fafc;
+            border-radius: 1rem;
+            padding: 1rem 1.5rem;
+            border: 1px solid #e2e8f0;
+            font-family: monospace;
+            margin: 1.2rem 0;
+        }
+
+        .note {
+            background: #eef2ff;
+            border-left: 4px solid #3b82f6;
+            padding: 0.75rem 1.2rem;
+            border-radius: 0.75rem;
+            margin: 1rem 0;
+        }
+
+        .warning {
+            background: #fffbeb;
+            border-left: 4px solid #eab308;
+            padding: 0.75rem 1.2rem;
+            border-radius: 0.75rem;
+            margin: 1rem 0;
+        }
+
+        hr {
+            margin: 2rem 0;
+            border: none;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .cmd {
+            background: #1e293b;
+            color: #cbd5e1;
+            padding: 0.4rem 1rem;
+            border-radius: 0.5rem;
+            font-family: monospace;
+            display: inline-block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th, td {
+            border: 1px solid #cbd5e1;
+            padding: 0.5rem;
+            text-align: left;
+        }
+
+        th {
+            background: #e2e8f0;
+        }
+
+        .badge {
+            background: #2563eb;
+            color: white;
+            border-radius: 20px;
+            padding: 0.2rem 0.6rem;
+            font-size: 0.7rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🧠 MLOps Project: Salary Prediction App <br> <span style="font-size:1.2rem;">(FastAPI + Streamlit + Docker + SonarQube)</span></h1>
+    <p>This tutorial walks you through building, containerizing, and deploying a complete ML salary classifier. The project uses a synthetic dataset, trains a Random Forest model, exposes a REST API via FastAPI, and provides an interactive UI with Streamlit. Finally, we containerize everything with Docker, orchestrate with Compose, and optionally integrate SonarQube for code quality.</p>
+
+    <div class="note">
+        ✅ <strong>Python Version:</strong> 3.10 &nbsp;&nbsp;|&nbsp;&nbsp; ✅ <strong>Main tools:</strong> scikit-learn, pandas, FastAPI, Streamlit, Docker, SonarScanner
+    </div>
+
+    <h2>📁 Project Structure</h2>
+    <div class="file-tree">
+        <pre>
+.
+├── app
+│   ├── fastapi_app.py
+│   └── frontend.py
+├── docker-compose.yml
+├── Dockerfile.base
+├── Dockerfile.fastapi
+├── Dockerfile.streamlit
+├── model
+│   ├── salary_model.pkl
+│   ├── label_encoders.pkl
+│   └── target_encoder.pkl
+├── requirements.txt
+├── train_model.py
+└── sonar-project.properties
+        </pre>
+    </div>
+
+    <h2>📦 Step 1 – Setup & Model Training</h2>
+    <p>Clone the repository and install dependencies. All required packages are listed in <code>requirements.txt</code>.</p>
+    <pre><code>git clone https://github.com/amjmaxserve/mlops-salary-prediction.git
+cd mlops-salary-prediction
+python -m venv venv
+source venv/bin/activate   # Windows: venv\Scripts\activate
+pip install -r requirements.txt</code></pre>
+    
+    <p>Create the training script <code>train_model.py</code> (provided below) – it generates synthetic data, encodes categorical features, trains a RandomForestClassifier, and saves artifacts into the <code>model/</code> folder.</p>
+    <pre><code># train_model.py (full content from the project description)
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.preprocessing import LabelEncoder
+import joblib
+import os
+
+np.random.seed(42)
+num_samples = 1000
+ages = np.random.randint(21, 60, num_samples)
+education = np.random.choice(['Bachelors','Masters','PhD','Diploma'], num_samples)
+hours_per_week = np.random.randint(20, 60, num_samples)
+occupation = np.random.choice(['Engineer','Teacher','Manager','Developer','Analyst'], num_samples)
+experience = np.random.randint(1, 35, num_samples)
+salary = []
+for i in range(num_samples):
+    if experience[i] > 10 and hours_per_week[i] > 40 and education[i] in ['Masters','PhD']:
+        salary.append('>50K')
+    else:
+        salary.append('<=50K')
+df = pd.DataFrame({'age':ages,'education':education,'hours_per_week':hours_per_week,
+                   'occupation':occupation,'experience':experience,'salary':salary})
+
+categorical_features = ['education','occupation']
+label_encoders = {}
+for col in categorical_features:
+    le = LabelEncoder()
+    df[col] = le.fit_transform(df[col])
+    label_encoders[col] = le
+
+target_encoder = LabelEncoder()
+df['salary'] = target_encoder.fit_transform(df['salary'])
+X = df.drop('salary', axis=1); y = df['salary']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+os.makedirs('model', exist_ok=True)
+joblib.dump(model, 'model/salary_model.pkl')
+joblib.dump(label_encoders, 'model/label_encoders.pkl')
+joblib.dump(target_encoder, 'model/target_encoder.pkl')
+print(f"Model accuracy: {accuracy_score(y_test, model.predict(X_test))*100:.2f}%")</code></pre>
+    <p>Run the training:</p>
+    <pre><code>python train_model.py</code></pre>
+    <p>After execution, the <code>model/</code> directory will contain three <code>.pkl</code> files.</p>
+
+    <h2>🌐 Step 2 – Build FastAPI Backend</h2>
+    <p>Create <code>app/fastapi_app.py</code> that loads the trained artifacts and exposes a <code>/predict</code> endpoint.</p>
+    <pre><code># app/fastapi_app.py
+import os, joblib, pandas as pd
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_DIR = os.path.join(BASE_DIR, "..", "model")
+model = joblib.load(os.path.join(MODEL_DIR, "salary_model.pkl"))
+label_encoders = joblib.load(os.path.join(MODEL_DIR, "label_encoders.pkl"))
+target_encoder = joblib.load(os.path.join(MODEL_DIR, "target_encoder.pkl"))
+
+app = FastAPI()
+
+class EmployeeData(BaseModel):
+    age: int; education: str; hours_per_week: int; occupation: str; experience: int
+
+@app.get("/")
+def home():
+    return {"message": "FastAPI ML API Running"}
+
+@app.post("/predict")
+def predict(data: EmployeeData):
+    education_enc = label_encoders['education'].transform([data.education])[0]
+    occupation_enc = label_encoders['occupation'].transform([data.occupation])[0]
+    input_df = pd.DataFrame([{
+        'age': data.age,
+        'education': education_enc,
+        'hours_per_week': data.hours_per_week,
+        'occupation': occupation_enc,
+        'experience': data.experience
+    }])
+    pred = model.predict(input_df)
+    result = target_encoder.inverse_transform(pred)
+    return {"prediction": result[0]}</code></pre>
+
+    <h2>🎨 Step 3 – Streamlit Frontend</h2>
+    <p>Create <code>app/frontend.py</code> to collect user inputs and call the FastAPI endpoint.</p>
+    <pre><code># app/frontend.py
+import streamlit as st
+import requests
+
+st.set_page_config(page_title="Salary Prediction", page_icon="💼", layout="centered")
+st.title("💼 Employee Salary Prediction")
+age = st.slider("Age", 21, 60, 30)
+education = st.selectbox("Education", ["Bachelors","Masters","PhD","Diploma"])
+hours_per_week = st.slider("Hours Per Week", 20, 60, 40)
+occupation = st.selectbox("Occupation", ["Engineer","Teacher","Manager","Developer","Analyst"])
+experience = st.slider("Experience", 1, 35, 5)
+
+if st.button("Predict Salary"):
+    payload = { "age": age, "education": education, "hours_per_week": hours_per_week,
+                "occupation": occupation, "experience": experience }
+    try:
+        response = requests.post("http://fastapi:8000/predict", json=payload)
+        result = response.json()
+        if response.status_code == 200 and "prediction" in result:
+            st.success(f"Prediction: {result['prediction']}")
+        else:
+            st.error(f"API Error: {result}")
+    except Exception as e:
+        st.error(f"Connection error: {e}")</code></pre>
+
+    <h2>🖥️ Step 4 – Local Testing (without Docker)</h2>
+    <p>Open two terminals:</p>
+    <div class="cmd">Terminal 1 – FastAPI</div>
+    <pre><code>source venv/bin/activate
+uvicorn app.fastapi_app:app --host 0.0.0.0 --port 8000</code></pre>
+    <div class="cmd">Terminal 2 – Streamlit</div>
+    <pre><code>source venv/bin/activate
+streamlit run app/frontend.py --server.port=8501 --server.address=0.0.0.0</code></pre>
+    <p>Open <code>http://localhost:8501</code> to interact with the app. The frontend will call the API on <code>http://localhost:8000/predict</code>.</p>
+    <div class="note">🔁 The frontend uses <code>fastapi:8000</code> inside Docker; for local testing you might need to adjust the endpoint to <code>http://localhost:8000/predict</code>. But the Docker compose will handle internal service discovery.</div>
+
+    <h2>🐳 Step 5 – Dockerization</h2>
+    <h3>5.1 Base Image (<code>Dockerfile.base</code>)</h3>
+    <pre><code>FROM python:3.10-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+WORKDIR /app
+RUN apt-get update && apt-get install -y build-essential gcc curl && rm -rf /var/lib/apt/lists/*
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt</code></pre>
+    <p>Build the base image:</p>
+    <pre><code>docker build -f Dockerfile.base -t ml-base-image .</code></pre>
+
+    <h3>5.2 FastAPI Dockerfile (<code>Dockerfile.fastapi</code>)</h3>
+    <pre><code>FROM ml-base-image
+WORKDIR /app
+COPY . .
+RUN python train_model.py
+EXPOSE 8000
+CMD ["uvicorn", "app.fastapi_app:app", "--host", "0.0.0.0", "--port", "8000"]</code></pre>
+
+    <h3>5.3 Streamlit Dockerfile (<code>Dockerfile.streamlit</code>)</h3>
+    <pre><code>FROM ml-base-image
+WORKDIR /app
+COPY . .
+EXPOSE 8501
+CMD ["streamlit", "run", "app/frontend.py", "--server.port=8501", "--server.address=0.0.0.0"]</code></pre>
+
+    <h2>⚙️ Step 6 – Docker Compose Orchestration</h2>
+    <p>Create <code>docker-compose.yml</code> to run both services together.</p>
+    <pre><code>version: '3.9'
+services:
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile.fastapi
+    container_name: fastapi_ml_app
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    container_name: streamlit_ui
+    ports:
+      - "8501:8501"
+    depends_on:
+      - fastapi
+    restart: unless-stopped</code></pre>
+    <p>Build and launch:</p>
+    <pre><code>docker-compose build --no-cache
+docker-compose up -d</code></pre>
+    <p>Access the application: <code>http://localhost:8501</code> (Streamlit UI) → it calls the FastAPI backend internally.</p>
+    <div class="warning">⚠️ Ensure ports 8000 & 8501 are free on your host. Use <code>docker-compose logs -f</code> to monitor.</div>
+
+    <h2>🔍 Step 7 (Optional) – SonarQube for Code Quality</h2>
+    <p>Spin up a local SonarQube stack using Docker Compose.</p>
+    <pre><code>mkdir SonarQube && cd SonarQube
+nano docker-compose.yml</code></pre>
+    <pre><code>version: "3.9"
+services:
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    depends_on: [postgres]
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://postgres:5432/sonarqube
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: sonarpassword
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    restart: unless-stopped
+  postgres:
+    image: postgres:15
+    container_name: sonarqube-postgres
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonarpassword
+      POSTGRES_DB: sonarqube
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+volumes:
+  sonarqube_data: sonarqube_logs: sonarqube_extensions: postgres_data:</code></pre>
+    <p>Start SonarQube:</p>
+    <pre><code>docker-compose up -d</code></pre>
+    <p>Access <code>http://&lt;SERVER_IP&gt;:9000</code> (default login: <code>admin/admin</code>). After login, change password and generate a global analysis token.</p>
+    
+    <h3>Generate & Use Sonar Token</h3>
+    <p>In SonarQube UI → Profile → Security → Generate Token (e.g., <code>mlops-project</code>). Copy the token.</p>
+    <p>Return to your MLOps project root directory. Run the SonarScanner container:</p>
+    <pre><code>docker run --rm \
+  -e SONAR_HOST_URL="http://192.168.29.7:9000" \
+  -e SONAR_TOKEN="sqa_5138d45c7edf4e8c90cb73d1434f6eb34f011055" \
+  -v "$(pwd):/usr/src" \
+  sonarsource/sonar-scanner-cli</code></pre>
+    <div class="note">🔑 Replace the IP and token with your actual SonarQube server address and generated token. The scanner will analyze code quality, bugs, and vulnerabilities.</div>
+
+    <h2>📊 Step 8 – SonarQube Configuration File</h2>
+    <p>Place a <code>sonar-project.properties</code> in the root directory:</p>
+    <pre><code>sonar.projectKey=mlops-salary-predictor
+sonar.projectName=MLOps Salary Prediction
+sonar.projectVersion=1.0
+sonar.sources=.
+sonar.exclusions=**/model/**,**/venv/**,**/__pycache__/**,**/SonarQube/**
+sonar.python.version=3.10
+sonar.language=py</code></pre>
+    <p>Re-run the sonar-scanner container to see detailed reports in the SonarQube dashboard.</p>
+
+    <h2>🧪 Summary & Final Commands</h2>
+    <table>
+        <tr><th>Action</th><th>Command</th></tr>
+        <tr><td>Train model</td><td><code>python train_model.py</code></td></tr>
+        <tr><td>Run locally (FastAPI)</td><td><code>uvicorn app.fastapi_app:app --reload</code></td></tr>
+        <tr><td>Run locally (Streamlit)</td><td><code>streamlit run app/frontend.py</code></td></tr>
+        <tr><td>Build base Docker image</td><td><code>docker build -f Dockerfile.base -t ml-base-image .</code></td></tr>
+        <tr><td>Compose up (full stack)</td><td><code>docker-compose up -d --build</code></td></tr>
+        <tr><td>Stop containers</td><td><code>docker-compose down</code></td></tr>
+        <tr><td>SonarQube scan</td><td><code>docker run --rm -e SONAR_HOST_URL=&lt;url&gt; -e SONAR_TOKEN=&lt;token&gt; -v "$(pwd):/usr/src" sonarsource/sonar-scanner-cli</code></td></tr>
+    </table>
+
+    <h2>🎯 Conclusion</h2>
+    <p>You have successfully built an end-to-end MLOps pipeline: data generation → model training → API creation → interactive UI → containerization with Docker → orchestration with Compose → optional code quality scanning with SonarQube. This architecture is scalable, portable, and follows best practices for ML model serving.</p>
+    <div class="note">
+        🌟 <strong>Pro tip:</strong> Extend the project by adding CI/CD (GitHub Actions), model versioning (DVC), or a monitoring stack (Prometheus + Grafana). The base Docker approach ensures reproducibility across environments.
+    </div>
+    <hr>
+    <p style="text-align: center; color: #475569;">📘 Tutorial based on <strong>mlops-salary-prediction</strong> | MLOps lifecycle demo</p>
+</div>
+</body>
+</html>
